@@ -1,31 +1,32 @@
 package com.yourcompany.apimonitor.core.aspect;
 
+import com.yourcompany.apimonitor.core.annotation.MonitorIgnore;
 import com.yourcompany.apimonitor.core.config.ApiMonitorProperties;
 import com.yourcompany.apimonitor.core.model.ApiAccessLog;
 import com.yourcompany.apimonitor.core.service.ApiMonitorService;
+import com.yourcompany.apimonitor.core.util.RequestUtil;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Aspect
+@Component
 @RequiredArgsConstructor
 public class ApiMonitorAspect {
 
     private final ApiMonitorProperties properties;
     private final ApiMonitorService apiMonitorService;
 
-    @Around("@annotation(org.springframework.web.bind.annotation.RequestMapping) || " +
-            "@annotation(org.springframework.web.bind.annotation.GetMapping) || " +
-            "@annotation(org.springframework.web.bind.annotation.PostMapping) || " +
-            "@annotation(org.springframework.web.bind.annotation.PutMapping) || " +
-            "@annotation(org.springframework.web.bind.annotation.DeleteMapping)")
+    @Around("@within(org.springframework.web.bind.annotation.RestController) && !@annotation(MonitorIgnore) && !@within(MonitorIgnore)")
     public Object monitorApi(ProceedingJoinPoint joinPoint) throws Throwable {
         if (!shouldMonitor()) {
             return joinPoint.proceed();
@@ -42,27 +43,28 @@ public class ApiMonitorAspect {
     }
 
     private boolean shouldMonitor() {
-        return Math.random() < properties.getSamplingRate();
+        return ThreadLocalRandom.current().nextDouble() < properties.getSamplingRate();
     }
 
     private ApiAccessLog createApiAccessLog(ProceedingJoinPoint joinPoint, Object result, long duration) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
 
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        String methodName = signature.getMethod().getName();
+
         ApiAccessLog log = new ApiAccessLog();
         log.setServiceName(properties.getServiceName());
         log.setApiPath(request.getRequestURI());
         log.setMethod(request.getMethod());
-        log.setRequestHeaders(getHeadersAsString(request));
-        log.setRequestParams(getParametersAsString(request));
-        log.setResponseBody(getResponseBodyAsString(result));
+        log.setMethodName(methodName);
+        log.setRequestHeaders(RequestUtil.getHeadersAsString(request));
+        log.setRequestParams(RequestUtil.getParametersAsString(request));
+        log.setResponseBody(RequestUtil.getResponseBodyAsString(result, properties.getMaxResponseBodySize()));
         log.setIpAddress(request.getRemoteAddr());
         log.setAccessTime(LocalDateTime.now());
         log.setDuration(duration);
 
         return log;
     }
-
-    // Implement getHeadersAsString, getParametersAsString, and getResponseBodyAsString methods
-    // ...
 }

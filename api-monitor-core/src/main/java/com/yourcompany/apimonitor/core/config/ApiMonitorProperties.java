@@ -1,6 +1,5 @@
 package com.yourcompany.apimonitor.core.config;
 
-
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

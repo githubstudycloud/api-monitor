@@ -9,6 +9,7 @@ public class ApiAccessLog {
     private String serviceName;
     private String apiPath;
     private String method;
+    private String methodName;
     private String requestHeaders;
     private String requestParams;
     private String responseBody;
