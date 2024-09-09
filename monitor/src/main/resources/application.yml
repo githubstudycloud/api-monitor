@@ -1,0 +1,23 @@
+monitor:
+  enabled: true
+  datasource:
+    enabled: true
+    jdbc-url: jdbc:mysql://localhost:3306/monitor
+    username: monitor_user
+    password: monitor_password
+  whitelist:
+    enabled: true
+    paths:
+      - /api/public/**
+      - /health
+  blacklist:
+    enabled: true
+    paths:
+      - /api/admin/**
+      - /internal/**
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/main_db
+    username: main_user
+    password: main_password
