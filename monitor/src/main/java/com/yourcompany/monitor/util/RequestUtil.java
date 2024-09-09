@@ -4,6 +4,7 @@ import com.yourcompany.monitor.model.RequestInfo;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +20,15 @@ public class RequestUtil {
 
         if (request instanceof ContentCachingRequestWrapper) {
             ContentCachingRequestWrapper wrapper = (ContentCachingRequestWrapper) request;
-            byte[] buf = wrapper.getContentAsByteArray();
-            if (buf.length > 0) {
-                String payload = new String(buf, 0, buf.length, wrapper.getCharacterEncoding());
-                info.setBody(payload);
+            try {
+                byte[] buf = wrapper.getContentAsByteArray();
+                if (buf.length > 0) {
+//                String payload = new String(wrapper.getContentAsByteArray(), wrapper.getCharacterEncoding());
+                    String payload = new String(buf, 0, buf.length, wrapper.getCharacterEncoding());
+                    info.setBody(truncateIfNecessary(payload, 1000)); // 限制body大小
+                }
+            } catch (UnsupportedEncodingException e) {
+                info.setBody("Error reading body");
             }
         }
 
@@ -38,5 +44,12 @@ public class RequestUtil {
             map.put(key, value);
         }
         return map;
+    }
+
+    private static String truncateIfNecessary(String input, int maxLength) {
+        if (input.length() <= maxLength) {
+            return input;
+        }
+        return input.substring(0, maxLength) + "...";
     }
 }
