@@ -35,7 +35,7 @@ def save_markdown(content, output_file):
         file.write(content)
 
 # 使用示例
-root_directory = "/path/to/your/project"
+root_directory = "E:\\idea\\java\\api-monitor\\monitor"
 output_file = "project_overview.md"
 
 md_content = generate_markdown(root_directory)
