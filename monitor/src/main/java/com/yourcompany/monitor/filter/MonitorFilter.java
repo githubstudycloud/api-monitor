@@ -23,11 +23,10 @@ public class MonitorFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        long startTime = System.currentTimeMillis();
-
-        // 包装请求和响应以捕获内容
         ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
         ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper(response);
+
+        long startTime = System.currentTimeMillis();
 
         try {
             filterChain.doFilter(wrappedRequest, wrappedResponse);

@@ -1,6 +1,5 @@
 package com.yourcompany.monitor.model;
 
-
 import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -23,6 +22,9 @@ public class MonitorRecord {
     private String requestHeaders;
 
     @Column(columnDefinition = "TEXT")
+    private String requestParameters;
+
+    @Column(columnDefinition = "TEXT")
     private String requestBody;
 
     @Column(columnDefinition = "TEXT")
@@ -36,7 +38,4 @@ public class MonitorRecord {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
-
-    @Column(columnDefinition = "TEXT")
-    private String requestParameters;
 }

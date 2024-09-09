@@ -29,6 +29,14 @@ public class ResponseUtil {
         return info;
     }
 
+    public static ResponseInfo getResponseInfo(HttpServletResponse response, Object result) {
+        ResponseInfo info = getResponseInfo(response);
+        if (info.getBody() == null && result != null) {
+            info.setBody(result.toString());
+        }
+        return info;
+    }
+
     private static String truncateIfNecessary(String input, int maxLength) {
         if (input.length() <= maxLength) {
             return input;

@@ -47,6 +47,7 @@ public class InterfaceInfoService {
         interfaceInfoRepository.saveAll(interfaceInfoList);
     }
 
+    // 其他方法...
     public List<InterfaceInfo> getAllInterfaceInfo() {
         return interfaceInfoRepository.findAll();
     }

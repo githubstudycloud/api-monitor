@@ -1,6 +1,5 @@
 package com.yourcompany.monitor.service;
 
-
 import com.yourcompany.monitor.model.MonitorRecord;
 import com.yourcompany.monitor.repository.MonitorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,7 @@ public class StatisticsService {
                 ));
     }
 
+
     public Map<String, Double> getAverageResponseTimeByEndpoint() {
         List<MonitorRecord> records = monitorRepository.findAll();
         return records.stream()
@@ -40,6 +40,8 @@ public class StatisticsService {
                 ));
     }
 
+    // 其他统计方法...
+    // 实现获取未使用接口的逻辑
     public List<String> getUnusedInterfaces() {
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
         List<MonitorRecord> recentRecords = monitorRepository.findByTimestampAfter(oneMonthAgo);
@@ -53,3 +55,14 @@ public class StatisticsService {
                 .filter(url -> !usedUrls.contains(url))
                 .collect(Collectors.toList());
     }
+
+
+
+    public List<Map.Entry<String, Long>> getTopAccessedEndpoints(int limit) {
+        Map<String, Long> accessCounts = getAccessCountByEndpoint();
+        return accessCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+}

@@ -12,3 +12,4 @@ import java.lang.annotation.*;
 @Import(MonitorAutoConfiguration.class)
 public @interface EnableMonitor {
 }
+

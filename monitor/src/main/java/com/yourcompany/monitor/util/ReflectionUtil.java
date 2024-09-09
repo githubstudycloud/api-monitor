@@ -20,4 +20,3 @@ public class ReflectionUtil {
         return method.getReturnType().getSimpleName();
     }
 }
-}

@@ -1,6 +1,5 @@
 package com.yourcompany.monitor.repository;
 
-
 import com.yourcompany.monitor.model.MonitorRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +10,8 @@ import java.util.List;
 
 @Repository
 public interface MonitorRepository extends JpaRepository<MonitorRecord, Long> {
+    List<MonitorRecord> findByRequestInfoUrlContaining(String url);
+    List<MonitorRecord> findByTimestampBetween(long startTime, long endTime);
     List<MonitorRecord> findByTimestampAfter(LocalDateTime timestamp);
 
     @Query("SELECT DISTINCT m.url FROM MonitorRecord m")
