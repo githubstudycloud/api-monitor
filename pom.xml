@@ -11,6 +11,7 @@
 
     <modules>
         <module>api-monitor-core</module>
+        <module>monitor</module>
 
         <!-- 其他模块将在这里添加，例如：
         <module>api-monitor-storage</module>
