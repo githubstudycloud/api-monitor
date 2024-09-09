@@ -1,7 +1,11 @@
+
+
+
 package com.yourcompany.monitor.config;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,23 +16,23 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
+
 @Configuration
-@ConditionalOnProperty(name = "monitor.datasource.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "monitor.jpa.enabled", havingValue = "true", matchIfMissing = true)
 @EnableJpaRepositories(
         basePackages = "com.yourcompany.monitor.repository",
         entityManagerFactoryRef = "monitorEntityManagerFactory",
         transactionManagerRef = "monitorTransactionManager"
 )
-//@EntityScan("com.yourcompany.monitor.model")
-//@EnableJpaRepositories("com.yourcompany.monitor.repository")
 public class MonitorJpaConfig {
 
+    @Autowired
+    private MonitorDataSourceSelector dataSourceSelector;
+
     @Bean
-    public LocalContainerEntityManagerFactoryBean monitorEntityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            @Qualifier("monitorDataSource") DataSource dataSource) {
+    public LocalContainerEntityManagerFactoryBean monitorEntityManagerFactory(EntityManagerFactoryBuilder builder) {
         return builder
-                .dataSource(dataSource)
+                .dataSource(dataSourceSelector.getDataSource())
                 .packages("com.yourcompany.monitor.model")
                 .persistenceUnit("monitor")
                 .build();
@@ -36,7 +40,7 @@ public class MonitorJpaConfig {
 
     @Bean
     public PlatformTransactionManager monitorTransactionManager(
-            @Qualifier("monitorEntityManagerFactory") LocalContainerEntityManagerFactoryBean monitorEntityManagerFactory) {
+            LocalContainerEntityManagerFactoryBean monitorEntityManagerFactory) {
         return new JpaTransactionManager(monitorEntityManagerFactory.getObject());
     }
 }

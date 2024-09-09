@@ -13,6 +13,7 @@ public class MonitorProperties {
     private AopConfig aop = new AopConfig();
     private FilterConfig filter = new FilterConfig();
     private DataSourceConfig dataSource = new DataSourceConfig();
+    private JpaConfig jpa = new JpaConfig();
     private ListConfig whitelist = new ListConfig();
     private ListConfig blacklist = new ListConfig();
 
@@ -34,9 +35,14 @@ public class MonitorProperties {
         private String password;
         private String driverClassName;
         // 添加连接池相关配置
-        private int maxPoolSize = 10;
-        private int minIdle = 5;
+        private int maximumPoolSize = 10;
+        private int minimumIdle = 5;
         private long connectionTimeout = 30000;
+    }
+
+    @Data
+    public static class JpaConfig {
+        private boolean enabled = true;
     }
 
     @Data
@@ -44,4 +50,6 @@ public class MonitorProperties {
         private boolean enabled = false;
         private List<String> paths;
     }
+
+
 }
