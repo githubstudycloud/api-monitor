@@ -1,6 +1,7 @@
 package com.yourcompany.monitor.config;
 
-import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,27 +15,24 @@ import javax.sql.DataSource;
 @Configuration
 public class MonitorDataSourceConfig {
 
-    @Bean
-    @ConditionalOnMissingBean(name = "monitorDataSource")
-    @ConditionalOnProperty(name = "monitor.datasource.enabled", havingValue = "true", matchIfMissing = true)
-    @ConfigurationProperties("monitor.datasource")
-    public DataSource monitorDataSource() {
-        return new HikariDataSource();
-    }
-
-    @Bean
     @Primary
-    @ConditionalOnMissingBean(name = "dataSource")
+    @Bean(name = "dataSource")
     @ConfigurationProperties("spring.datasource")
     public DataSource primaryDataSource() {
-        return new HikariDataSource();
+        return new BasicDataSource();
+    }
+
+    @Bean(name = "monitorDataSource")
+    @ConditionalOnProperty(name = "monitor.datasource.enabled", havingValue = "true")
+    @ConfigurationProperties("monitor.datasource")
+    public DataSource monitorDataSource() {
+        return new BasicDataSource();
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public MonitorDataSourceSelector monitorDataSourceSelector(
-            @Qualifier("monitorDataSource") DataSource monitorDataSource,
-            @Qualifier("dataSource") DataSource primaryDataSource) {
-        return new MonitorDataSourceSelector(monitorDataSource, primaryDataSource);
+            @Qualifier("dataSource") DataSource primaryDataSource,
+            @Autowired(required = false) @Qualifier("monitorDataSource") DataSource monitorDataSource) {
+        return new MonitorDataSourceSelector(primaryDataSource, monitorDataSource);
     }
 }

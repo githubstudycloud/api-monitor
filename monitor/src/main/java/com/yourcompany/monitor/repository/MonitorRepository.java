@@ -10,7 +10,8 @@ import java.util.List;
 
 @Repository
 public interface MonitorRepository extends JpaRepository<MonitorRecord, Long> {
-    List<MonitorRecord> findByRequestInfoUrlContaining(String url);
+//    List<MonitorRecord> findByRequestInfoUrlContaining(String url);
+    List<MonitorRecord> findByUrlContaining(String url);
     List<MonitorRecord> findByTimestampBetween(long startTime, long endTime);
     List<MonitorRecord> findByTimestampAfter(LocalDateTime timestamp);
 

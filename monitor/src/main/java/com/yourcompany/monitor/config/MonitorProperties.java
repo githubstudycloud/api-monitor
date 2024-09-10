@@ -31,6 +31,7 @@ public class MonitorProperties {
     public static class DataSourceConfig {
         private boolean enabled = false;
         private String url;
+        private String jdbcUrl;
         private String username;
         private String password;
         private String driverClassName;
