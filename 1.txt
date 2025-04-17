@@ -1,0 +1,187 @@
+Vue 2.7 导出 Excel 文件名与扩展名不一致以及表格没有边框的问题是常见的导出 Excel 功能实现挑战。我来帮你解决这个问题。
+
+这个问题通常有两个部分：
+1. 文件名和扩展名不一致的提示
+2. 导出后的表格没有边框
+
+让我为你搜索一下这个问题的解决方案。
+
+现在我找到了一些相关信息，可以帮助解决你的问题。根据搜索结果，针对 Vue 2.7 导出 Excel 时出现的文件名和扩展名不一致提示以及表格没有边框的问题，有以下几个解决方案：
+
+## 问题一：文件名和扩展名不一致的提示
+
+这个问题主要是因为 Excel 文件格式和扩展名不匹配所导致的。解决方法：
+
+1. 确保使用正确的文件类型。如果你在使用较新的 Excel 格式，应该使用 .xlsx 扩展名而不是 .xls
+
+2. 在下载文件时，设置正确的 MIME 类型。对于 .xlsx 文件，应使用 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'，而不是 'application/vnd.ms-excel'
+
+## 问题二：表格没有边框
+
+对于表格没有边框的问题，可以采取以下解决方案：
+
+1. 在生成 Excel 文件时添加样式设置：
+
+```javascript
+// 使用 xlsx 库时，可以这样设置边框
+import * as XLSX from 'xlsx';
+
+export function exportToExcel(data, fileName) {
+  // 创建工作簿
+  const wb = XLSX.utils.book_new();
+  
+  // 创建工作表
+  const ws = XLSX.utils.json_to_sheet(data);
+  
+  // 设置单元格样式，添加边框
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  
+  // 遍历所有单元格添加边框样式
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cell_address = {c: C, r: R};
+      const cell_ref = XLSX.utils.encode_cell(cell_address);
+      
+      if (!ws[cell_ref]) ws[cell_ref] = { v: '' };
+      
+      if (!ws[cell_ref].s) ws[cell_ref].s = {};
+      ws[cell_ref].s.border = {
+        top: { style: 'thin', color: { rgb: "000000" } },
+        bottom: { style: 'thin', color: { rgb: "000000" } },
+        left: { style: 'thin', color: { rgb: "000000" } },
+        right: { style: 'thin', color: { rgb: "000000" } }
+      };
+    }
+  }
+  
+  // 添加工作表到工作簿
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  
+  // 导出 Excel 文件
+  XLSX.writeFile(wb, `${fileName}.xlsx`);
+}
+```
+
+2. 使用专业的 Excel 组件如 SpreadJS，它可以更好地保留格式和样式。SpreadJS 在导出 Excel 时能够保持相同的格式和样式
+
+3. 使用 ExcelJS 库，它提供了更多的样式控制选项：
+
+```javascript
+import ExcelJS from 'exceljs';
+import FileSaver from 'file-saver';
+
+export function exportToExcel(data, fileName) {
+  // 创建工作簿
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Sheet1');
+  
+  // 添加表头
+  const headers = Object.keys(data[0]);
+  worksheet.addRow(headers);
+  
+  // 添加数据行
+  data.forEach(item => {
+    worksheet.addRow(Object.values(item));
+  });
+  
+  // 设置所有单元格的边框
+  worksheet.eachRow({ includeEmpty: true }, row => {
+    row.eachCell({ includeEmpty: true }, cell => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  });
+  
+  // 导出 Excel 文件
+  workbook.xlsx.writeBuffer().then(buffer => {
+    const blob = new Blob([buffer], { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
+    FileSaver.saveAs(blob, `${fileName}.xlsx`);
+  });
+}
+```
+
+## 完整解决方案
+
+综合以上解决方案，我建议使用 ExcelJS 库来解决你的问题，它可以同时解决文件名/扩展名不匹配和表格没有边框的问题：
+
+1. 首先安装必要的依赖：
+```bash
+npm install exceljs file-saver
+```
+
+2. 然后在你的 Vue 组件中使用以下代码：
+
+```javascript
+import ExcelJS from 'exceljs';
+import FileSaver from 'file-saver';
+
+export default {
+  methods: {
+    exportToExcel() {
+      // 创建工作簿
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Sheet1');
+      
+      // 假设你的数据是这样的格式
+      const data = this.yourDataArray; // 替换成你的数据源
+      
+      // 添加表头
+      const headers = Object.keys(data[0]);
+      worksheet.addRow(headers);
+      
+      // 添加数据行
+      data.forEach(item => {
+        worksheet.addRow(Object.values(item));
+      });
+      
+      // 设置所有单元格的边框和样式
+      worksheet.eachRow({ includeEmpty: true }, row => {
+        row.eachCell({ includeEmpty: true }, cell => {
+          // 设置边框
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+          
+          // 设置表头样式
+          if (row.number === 1) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFD3D3D3' } // 浅灰色背景
+            };
+            cell.font = {
+              bold: true
+            };
+          }
+        });
+      });
+      
+      // 导出 Excel 文件，确保使用正确的 MIME 类型
+      workbook.xlsx.writeBuffer().then(buffer => {
+        const blob = new Blob([buffer], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        });
+        FileSaver.saveAs(blob, 'export_data.xlsx');
+      });
+    }
+  }
+}
+```
+
+这段代码将会:
+1. 正确设置 MIME 类型，避免文件格式和扩展名不匹配的问题
+2. 为所有单元格添加边框，确保表格有边框显示
+3. 为表头添加样式，使其更易于阅读
+
+你可以根据需要调整边框样式、颜色等参数。
+
+希望这能帮助解决你的问题！
